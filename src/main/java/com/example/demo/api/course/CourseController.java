@@ -20,6 +20,11 @@ public class CourseController {
         this.courseService = courseService;
     }
 
+    @PostMapping(path = "/empty")
+    public Course createEmptyCourse() {
+        return courseService.createEmptyCourse();
+    }
+
     @PostMapping
     public Course createCourse(@RequestBody CreateCourseRequest course) {
         return courseService.createCourse(course);

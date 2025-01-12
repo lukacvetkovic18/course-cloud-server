@@ -1,9 +1,11 @@
 package com.example.demo.api.lesson;
 
+import com.example.demo.api.course.Course;
 import com.example.demo.api.lesson.lessonModels.CreateLessonRequest;
 import com.example.demo.api.lesson.lessonModels.UpdateLessonRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,6 +19,11 @@ public class LessonController {
     @Autowired
     public LessonController(LessonService lessonService) {
         this.lessonService = lessonService;
+    }
+
+    @PostMapping("/empty")
+    public Lesson createEmptyLesson(@RequestBody CreateLessonRequest lessonRequest) {
+        return lessonService.createEmptyLesson(lessonRequest.getCourseId());
     }
 
     @PostMapping

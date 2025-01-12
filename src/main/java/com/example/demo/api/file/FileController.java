@@ -29,25 +29,19 @@ public class FileController {
     @PostMapping(path = "/upload")
     public ResponseEntity<File> uploadFile(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("lessonId") Long lessonId) {
-        try {
-            File savedFile = fileService.saveFile(file, lessonId);
-            return new ResponseEntity<>(savedFile, HttpStatus.CREATED);
-        } catch (IOException e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+            @RequestParam("lessonId") Long lessonId
+    ) throws IOException {
+        File savedFile = fileService.saveFile(file, lessonId);
+        return ResponseEntity.ok(savedFile);
     }
 
     @GetMapping(path = "/{id}")
-    public ResponseEntity<byte[]> getFile(@PathVariable Long id) {
-        return fileService.getFile(id)
-                .map(fileEntity -> {
-                    return ResponseEntity.ok()
-                            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileEntity.getName() + "\"")
-                            .body(fileEntity.getData());
-                })
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(null));
+    public ResponseEntity<byte[]> getFile(@PathVariable Long id) throws IOException {
+        File file = fileService.getFile(id).orElseThrow();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
+                .header(HttpHeaders.CONTENT_TYPE, file.getType())
+                .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(file.getData().length))
+                .body(file.getData());
     }
 }

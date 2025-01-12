@@ -35,7 +35,7 @@ public class File {
     private String type;
 
     @Lob()
-    @Column()
+    @Column(name = "data")
     private byte[] data;
 
     @ManyToOne

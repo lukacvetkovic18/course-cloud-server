@@ -26,6 +26,13 @@ public class CourseService {
         this.jwtService = jwtService;
     }
 
+    public Course createEmptyCourse() {
+        Course course = Course.builder()
+                .isActive(false)
+                .build();
+        return courseRepository.save(course);
+    }
+
     public Course createCourse(CreateCourseRequest courseRequest) {
         Course course = Course.builder()
                 .title(courseRequest.getTitle())

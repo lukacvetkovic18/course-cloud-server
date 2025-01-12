@@ -25,6 +25,15 @@ public class LessonService {
         this.courseRepository = courseRepository;
     }
 
+    public Lesson createEmptyLesson(Long courseId) {
+        Course course = courseRepository.findById(courseId).orElseThrow();
+
+        Lesson lesson = Lesson.builder()
+                .course(course)
+                .build();
+        return lessonRepository.save(lesson);
+    }
+
     public Lesson createLesson(CreateLessonRequest lessonRequest) {
         Course course = courseRepository.findById(lessonRequest.getCourseId()).orElseThrow();
 
