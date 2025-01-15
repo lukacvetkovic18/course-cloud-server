@@ -1,13 +1,11 @@
 package com.example.demo.api.question;
 
-import com.example.demo.api.course.Course;
 import com.example.demo.api.question.questionModels.CreateQuestionRequest;
 import com.example.demo.api.question.questionModels.UpdateQuestionRequest;
 import com.example.demo.api.questionType.QuestionType;
 import com.example.demo.api.questionType.QuestionTypeRepository;
 import com.example.demo.api.quiz.Quiz;
 import com.example.demo.api.quiz.QuizRepository;
-import com.example.demo.api.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -73,5 +71,16 @@ public class QuestionService {
     public void deleteQuestion(Long id) {
         questionRepository.deleteById(id);
     }
-    
+
+    public List<Question> getQuestionsByQuizId(Long id) {
+        return questionRepository.findQuestionsByQuizId(id);
+    }
+
+    public void deleteQuestionsByQuizId(Long id) {
+        questionRepository.deleteQuestionsByQuizId(id);
+    }
+
+    public List<QuestionType> getAllQuestionTypes() {
+        return questionTypeRepository.findAll();
+    }
 }

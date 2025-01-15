@@ -31,6 +31,9 @@ public class Answer {
     @Column()
     private String title;
 
+    @Column()
+    private Boolean isCorrect;
+
     @ManyToOne
     @JoinColumn(name = "question_id")
     Question question;

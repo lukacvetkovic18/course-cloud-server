@@ -4,9 +4,11 @@ import com.example.demo.api.lesson.Lesson;
 import com.example.demo.api.lesson.LessonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -33,7 +35,25 @@ public class FileService {
         return fileRepository.save(file);
     }
 
+    @Transactional
     public Optional<File> getFile(Long id) {
         return fileRepository.findById(id);
+    }
+
+    public void deleteFile(Long id) {
+        fileRepository.deleteById(id);
+    }
+
+    @Transactional
+    public List<File> getFilesByLessonId(Long id) {
+        return fileRepository.findFilesByLessonId(id);
+    }
+
+    public void deleteFilesByLessonId(Long id) {
+        fileRepository.deleteFilesByLessonId(id);
+    }
+
+    public List<File> getFilesByLessonIds(List<Long> lessonIds) {
+        return fileRepository.findFilesByLessonIds(lessonIds);
     }
 }

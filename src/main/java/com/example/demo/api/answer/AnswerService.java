@@ -2,6 +2,7 @@ package com.example.demo.api.answer;
 
 import com.example.demo.api.answer.answerModels.CreateAnswerRequest;
 import com.example.demo.api.answer.answerModels.UpdateAnswerRequest;
+import com.example.demo.api.file.File;
 import com.example.demo.api.question.Question;
 import com.example.demo.api.question.QuestionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,7 @@ public class AnswerService {
 
         Answer answer = Answer.builder()
                 .title(answerRequest.getTitle())
+                .isCorrect(answerRequest.getIsCorrect())
                 .question(question)
                 .build();
 
@@ -47,6 +49,7 @@ public class AnswerService {
         Answer answer = answerRepository.findById(answerRequest.getId()).orElseThrow();
 
         if(answerRequest.getTitle() != null) answer.setTitle(answerRequest.getTitle().get());
+        if(answerRequest.getIsCorrect() != null) answer.setIsCorrect(answerRequest.getIsCorrect().get());
         if(answerRequest.getQuestionId() != null) {
             Question question = questionRepository.findById(answerRequest.getQuestionId().get()).orElseThrow();
             answer.setQuestion(question);
@@ -61,5 +64,17 @@ public class AnswerService {
 
     public void deleteAnswer(Long id) {
         answerRepository.deleteById(id);
+    }
+
+    public List<Answer> getAnswersByQuestionId(Long id) {
+        return answerRepository.findAnswersByQuestionId(id);
+    }
+
+    public void deleteAnswersByQuestionId(Long id) {
+        answerRepository.deleteAnswersByQuestionId(id);
+    }
+
+    public List<Answer> getAnswersByQuestionIds(List<Long> questionIds) {
+        return answerRepository.findAnswersByQuestionIds(questionIds);
     }
 }

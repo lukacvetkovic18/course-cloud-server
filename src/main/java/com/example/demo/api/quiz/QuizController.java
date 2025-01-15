@@ -1,5 +1,6 @@
 package com.example.demo.api.quiz;
 
+import com.example.demo.api.question.Question;
 import com.example.demo.api.quiz.quizModels.CreateQuizRequest;
 import com.example.demo.api.quiz.quizModels.UpdateQuizRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,5 +46,15 @@ public class QuizController {
     @DeleteMapping(path = "/{id}")
     public void deleteQuiz(@PathVariable("id") long id) {
         quizService.deleteQuiz(id);
+    }
+
+    @GetMapping(path = "/course/{id}")
+    public List<Quiz> getQuizzesByCourseId(@PathVariable("id") long id) {
+        return quizService.getQuizzesByCourseId(id);
+    }
+
+    @DeleteMapping(path = "/course/{id}")
+    public void deleteQuizzesByCourseId(@PathVariable("id") long id) {
+        quizService.deleteQuizzesByCourseId(id);
     }
 }

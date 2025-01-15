@@ -2,6 +2,7 @@ package com.example.demo.api.quiz;
 
 import com.example.demo.api.course.Course;
 import com.example.demo.api.course.CourseRepository;
+import com.example.demo.api.question.Question;
 import com.example.demo.api.quiz.quizModels.CreateQuizRequest;
 import com.example.demo.api.quiz.quizModels.UpdateQuizRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +61,14 @@ public class QuizService {
 
     public void deleteQuiz(Long id) {
         quizRepository.deleteById(id);
+    }
+
+    public List<Quiz> getQuizzesByCourseId(Long id) {
+        return quizRepository.findQuizzesByCourseId(id);
+    }
+
+    public void deleteQuizzesByCourseId(Long id) {
+        quizRepository.deleteQuizzesByCourseId(id);
     }
     
 }

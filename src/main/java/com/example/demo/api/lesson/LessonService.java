@@ -2,6 +2,7 @@ package com.example.demo.api.lesson;
 
 import com.example.demo.api.course.Course;
 import com.example.demo.api.course.CourseRepository;
+import com.example.demo.api.file.FileRepository;
 import com.example.demo.api.lesson.lessonModels.CreateLessonRequest;
 import com.example.demo.api.lesson.lessonModels.UpdateLessonRequest;
 import com.example.demo.api.quiz.Quiz;
@@ -15,14 +16,17 @@ import java.util.Optional;
 public class LessonService {
     private final LessonRepository lessonRepository;
     private final CourseRepository courseRepository;
+    private final FileRepository fileRepository;
 
     @Autowired
     public LessonService(
             LessonRepository lessonRepository,
-            CourseRepository courseRepository
+            CourseRepository courseRepository,
+            FileRepository fileRepository
     ) {
         this.lessonRepository = lessonRepository;
         this.courseRepository = courseRepository;
+        this.fileRepository = fileRepository;
     }
 
     public Lesson createEmptyLesson(Long courseId) {
@@ -73,9 +77,9 @@ public class LessonService {
     }
 
     public void deleteLesson(Long id) {
+        fileRepository.deleteFilesByLessonId(id);
         lessonRepository.deleteById(id);
     }
-
 
     public List<Lesson> getLessonsByCourseId(Long id) {
         return lessonRepository.findLessonsByCourseId(id);

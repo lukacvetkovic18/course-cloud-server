@@ -35,13 +35,33 @@ public class FileController {
         return ResponseEntity.ok(savedFile);
     }
 
-    @GetMapping(path = "/{id}")
-    public ResponseEntity<byte[]> getFile(@PathVariable Long id) throws IOException {
+    @GetMapping(path = "/download/{id}")
+    public ResponseEntity<byte[]> downloadFile(@PathVariable Long id) throws IOException {
         File file = fileService.getFile(id).orElseThrow();
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
                 .header(HttpHeaders.CONTENT_TYPE, file.getType())
                 .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(file.getData().length))
                 .body(file.getData());
+    }
+
+    @DeleteMapping(path = "/{id}")
+    public void deleteFile(@PathVariable("id") long id) {
+        fileService.deleteFile(id);
+    }
+
+    @GetMapping(path = "/lesson/{id}")
+    public List<File> getFilesByLessonId(@PathVariable("id") long id) {
+        return fileService.getFilesByLessonId(id);
+    }
+
+    @DeleteMapping(path = "/lesson/{id}")
+    public void deleteFilesByLessonId(@PathVariable("id") long id) {
+        fileService.deleteFilesByLessonId(id);
+    }
+
+    @PostMapping(path = "/lessons/files")
+    public List<File> getFilesByLessonIds(@RequestBody List<Long> lessonIds) {
+        return fileService.getFilesByLessonIds(lessonIds);
     }
 }

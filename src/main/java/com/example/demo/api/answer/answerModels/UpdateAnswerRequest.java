@@ -12,5 +12,6 @@ import java.util.Optional;
 public class UpdateAnswerRequest {
     private Long id;
     private Optional<String> title;
+    private Optional<Boolean> isCorrect;
     private Optional<Long> questionId;
 }

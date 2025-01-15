@@ -46,4 +46,19 @@ public class AnswerController {
     public void deleteAnswer(@PathVariable("id") long id) {
         answerService.deleteAnswer(id);
     }
+
+    @GetMapping(path = "/question/{id}")
+    public List<Answer> getAnswersByQuestionId(@PathVariable("id") long id) {
+        return answerService.getAnswersByQuestionId(id);
+    }
+
+    @DeleteMapping(path = "/question/{id}")
+    public void deleteAnswersByQuestionId(@PathVariable("id") long id) {
+        answerService.deleteAnswersByQuestionId(id);
+    }
+
+    @PostMapping(path = "/questions/answers")
+    public List<Answer> getAnswersByQuestionIds(@RequestBody List<Long> questionIds) {
+        return answerService.getAnswersByQuestionIds(questionIds);
+    }
 }

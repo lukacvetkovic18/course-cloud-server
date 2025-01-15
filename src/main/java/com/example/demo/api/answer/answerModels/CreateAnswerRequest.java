@@ -9,5 +9,6 @@ import lombok.*;
 @AllArgsConstructor
 public class CreateAnswerRequest {
     private String title;
+    private Boolean isCorrect;
     private Long questionId;
 }
