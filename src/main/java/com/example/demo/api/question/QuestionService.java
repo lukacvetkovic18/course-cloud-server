@@ -81,6 +81,7 @@ public class QuestionService {
     }
 
     public void deleteQuestion(Long id) {
+        answerRepository.deleteAnswersByQuestionId(id);
         questionRepository.deleteById(id);
     }
 
