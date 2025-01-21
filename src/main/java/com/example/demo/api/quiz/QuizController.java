@@ -49,12 +49,12 @@ public class QuizController {
     }
 
     @GetMapping(path = "/course/{id}")
-    public List<Quiz> getQuizzesByCourseId(@PathVariable("id") long id) {
-        return quizService.getQuizzesByCourseId(id);
+    public Optional<Quiz> getQuizByCourseId(@PathVariable("id") long id) {
+        return quizService.getQuizByCourseId(id);
     }
 
     @DeleteMapping(path = "/course/{id}")
-    public void deleteQuizzesByCourseId(@PathVariable("id") long id) {
-        quizService.deleteQuizzesByCourseId(id);
+    public void deleteQuizByCourseId(@PathVariable("id") long id) {
+        quizService.deleteQuizByCourseId(id);
     }
 }

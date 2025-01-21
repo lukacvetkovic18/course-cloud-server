@@ -63,12 +63,12 @@ public class QuizService {
         quizRepository.deleteById(id);
     }
 
-    public List<Quiz> getQuizzesByCourseId(Long id) {
-        return quizRepository.findQuizzesByCourseId(id);
+    public Optional<Quiz> getQuizByCourseId(Long id) {
+        return quizRepository.findQuizByCourseId(id);
     }
 
-    public void deleteQuizzesByCourseId(Long id) {
-        quizRepository.deleteQuizzesByCourseId(id);
+    public void deleteQuizByCourseId(Long id) {
+        quizRepository.deleteQuizByCourseId(id);
     }
     
 }

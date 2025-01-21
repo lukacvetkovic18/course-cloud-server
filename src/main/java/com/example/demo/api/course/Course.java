@@ -2,6 +2,8 @@ package com.example.demo.api.course;
 
 import java.sql.Timestamp;
 
+import com.example.demo.api.quiz.Quiz;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -37,6 +39,10 @@ public class Course {
 
     @Column()
     private Float duration;
+
+    @OneToOne(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private Quiz quiz;
 
     @Column(nullable = false, updatable = false)
     @CreationTimestamp

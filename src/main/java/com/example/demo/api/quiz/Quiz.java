@@ -33,10 +33,15 @@ public class Quiz {
     @Column()
     private String title;
 
+//    @Setter
+//    @ManyToOne
+//    @JoinColumn(name = "course_id")
+//    Course course;
+
     @Setter
-    @ManyToOne
-    @JoinColumn(name = "course_id")
-    Course course;
+    @OneToOne
+    @JoinColumn(name = "course_id", unique = true, nullable = false) // Ensure uniqueness
+    private Course course;
 
     // @OneToMany(cascade = CascadeType.ALL)
     // private List<Question> questions;

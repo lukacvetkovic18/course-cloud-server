@@ -2,6 +2,7 @@ package com.example.demo.api.question;
 
 import com.example.demo.api.question.questionModels.CreateQuestionRequest;
 import com.example.demo.api.question.questionModels.UpdateQuestionRequest;
+import com.example.demo.api.question.questionModels.UpdateQuestionWithAnswersRequest;
 import com.example.demo.api.questionType.QuestionType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -59,5 +60,10 @@ public class QuestionController {
 
     @GetMapping(path = "/types")
     public List<QuestionType> getAllQuestionTypes() { return questionService.getAllQuestionTypes(); }
+
+    @PutMapping("/update-with-answers")
+    public Question updateQuestionWithAnswers(@RequestBody UpdateQuestionWithAnswersRequest questionRequest) {
+        return questionService.updateQuestionWithAnswers(questionRequest);
+    }
 
 }
