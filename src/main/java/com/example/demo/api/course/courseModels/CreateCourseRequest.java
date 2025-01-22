@@ -9,7 +9,8 @@ import lombok.*;
 @AllArgsConstructor
 public class CreateCourseRequest {
     private String title;
+    private String shortDescription;
     private String description;
     private Boolean isActive;
-    private Float duration;
+    private String image;
 }

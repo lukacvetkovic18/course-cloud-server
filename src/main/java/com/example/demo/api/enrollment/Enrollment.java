@@ -36,10 +36,7 @@ public class Enrollment {
     @ManyToOne
     @JoinColumn(name = "course_id")
     Course course;
-    
-    @Column()
-    private Double progress;
-    
+
     @Column()
     private Boolean isInstructor;
 

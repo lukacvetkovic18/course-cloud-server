@@ -12,7 +12,8 @@ import java.util.Optional;
 public class UpdateCourseRequest {
     private Long id;
     private Optional<String> title;
+    private Optional<String> shortDescription;
     private Optional<String> description;
     private Optional<Boolean> isActive;
-    private Optional<Float> duration;
+    private Optional<String> image;
 }

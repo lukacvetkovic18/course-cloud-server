@@ -1,7 +1,16 @@
 package com.example.demo.api.course;
 
+import com.example.demo.api.answer.Answer;
+import com.example.demo.api.answer.AnswerRepository;
 import com.example.demo.api.course.courseModels.CreateCourseRequest;
 import com.example.demo.api.course.courseModels.UpdateCourseRequest;
+import com.example.demo.api.enrollment.EnrollmentRepository;
+import com.example.demo.api.file.FileRepository;
+import com.example.demo.api.lesson.LessonRepository;
+import com.example.demo.api.lesson.LessonService;
+import com.example.demo.api.question.QuestionRepository;
+import com.example.demo.api.quiz.QuizRepository;
+import com.example.demo.api.quiz.QuizService;
 import com.example.demo.api.user.User;
 import com.example.demo.api.user.UserRepository;
 import com.example.demo.config.JwtService;
@@ -17,12 +26,32 @@ import static com.example.demo.api.user.UserService.getBearerTokenHeader;
 public class CourseService {
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
+    private final EnrollmentRepository enrollmentRepository;
+    private final LessonRepository lessonRepository;
+    private final QuizRepository quizRepository;
+    private final FileRepository fileRepository;
+    private final QuestionRepository questionRepository;
+    private final AnswerRepository answerRepository;
     private final JwtService jwtService;
 
     @Autowired
-    public CourseService(CourseRepository courseRepository, UserRepository userRepository, JwtService jwtService) {
+    public CourseService(CourseRepository courseRepository,
+                         UserRepository userRepository,
+                         EnrollmentRepository enrollmentRepository,
+                         LessonRepository lessonRepository,
+                         QuizRepository quizRepository,
+                         FileRepository fileRepository,
+                         QuestionRepository questionRepository,
+                         AnswerRepository answerRepository,
+                         JwtService jwtService) {
         this.courseRepository = courseRepository;
         this.userRepository = userRepository;
+        this.enrollmentRepository = enrollmentRepository;
+        this.lessonRepository = lessonRepository;
+        this.quizRepository = quizRepository;
+        this.fileRepository = fileRepository;
+        this.questionRepository = questionRepository;
+        this.answerRepository = answerRepository;
         this.jwtService = jwtService;
     }
 
@@ -36,9 +65,10 @@ public class CourseService {
     public Course createCourse(CreateCourseRequest courseRequest) {
         Course course = Course.builder()
                 .title(courseRequest.getTitle())
+                .shortDescription(courseRequest.getShortDescription())
                 .description(courseRequest.getDescription())
                 .isActive(courseRequest.getIsActive())
-                .duration(courseRequest.getDuration())
+                .image(courseRequest.getImage())
                 .build();
         return courseRepository.save(course);
     }
@@ -55,9 +85,10 @@ public class CourseService {
         Course course = courseRepository.findById(courseRequest.getId()).orElseThrow();
 
         if(courseRequest.getTitle() != null) course.setTitle(courseRequest.getTitle().get());
+        if(courseRequest.getShortDescription() != null) course.setShortDescription(courseRequest.getShortDescription().get());
         if(courseRequest.getDescription() != null) course.setDescription(courseRequest.getDescription().get());
         if(courseRequest.getIsActive() != null) course.setIsActive(courseRequest.getIsActive().get());
-        if(courseRequest.getDuration() != null) course.setDuration(courseRequest.getDuration().get());
+        if(courseRequest.getImage() != null) course.setImage(courseRequest.getImage().get());
 
         return courseRepository.save(course);
     }
@@ -67,6 +98,15 @@ public class CourseService {
     }
 
     public void deleteCourse(Long id) {
+        enrollmentRepository.deleteEnrollmentsByCourseId(id);
+
+        fileRepository.deleteFilesByCourseId(id);
+        lessonRepository.deleteLessonsByCourseId(id);
+
+        answerRepository.deleteAnswersByCourseId(id);
+        questionRepository.deleteQuestionsByCourseId(id);
+        quizRepository.deleteQuizByCourseId(id);
+
         courseRepository.deleteById(id);
     }
 

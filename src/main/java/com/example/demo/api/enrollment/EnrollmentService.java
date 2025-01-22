@@ -36,7 +36,6 @@ public class EnrollmentService {
         Enrollment enrollment = Enrollment.builder()
                 .user(user)
                 .course(course)
-                .progress(enrollmentRequest.getProgress())
                 .isInstructor(enrollmentRequest.getIsInstructor())
                 .build();
         return enrollmentRepository.save(enrollment);
@@ -61,7 +60,6 @@ public class EnrollmentService {
             Course course = courseRepository.findById(enrollmentRequest.getCourseId().get()).orElseThrow();
             enrollment.setCourse(course);
         }
-        if(enrollmentRequest.getProgress() != null) enrollment.setProgress(enrollmentRequest.getProgress().get());
         if(enrollmentRequest.getIsInstructor() != null) enrollment.setIsInstructor(enrollmentRequest.getIsInstructor().get());
 
         return enrollmentRepository.save(enrollment);

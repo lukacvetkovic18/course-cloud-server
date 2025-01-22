@@ -32,13 +32,16 @@ public class Course {
     private String title;
 
     @Column()
+    private String shortDescription;
+
+    @Column()
     private String description;
 
     @Column()
     private Boolean isActive;
 
-    @Column()
-    private Float duration;
+    @Column(length = 2000000)
+    private String image;
 
     @OneToOne(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
@@ -47,14 +50,5 @@ public class Course {
     @Column(nullable = false, updatable = false)
     @CreationTimestamp
     private Timestamp createdAt;
-
-    // @OneToMany(cascade = CascadeType.ALL)
-    // private List<Enrollment> enrollments;
-
-    // @OneToMany(cascade = CascadeType.ALL)
-    // private List<Lesson> lessons;
-
-    // @OneToMany(cascade = CascadeType.ALL)
-    // private List<Quiz> quizzes;
 
 }

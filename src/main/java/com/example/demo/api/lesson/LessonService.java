@@ -80,6 +80,10 @@ public class LessonService {
         fileRepository.deleteFilesByLessonId(id);
         lessonRepository.deleteById(id);
     }
+    public void deleteLessonsByCourseId(Long id) {
+        fileRepository.deleteFilesByCourseId(id);
+        lessonRepository.deleteLessonsByCourseId(id);
+    }
 
     public List<Lesson> getLessonsByCourseId(Long id) {
         return lessonRepository.findLessonsByCourseId(id);

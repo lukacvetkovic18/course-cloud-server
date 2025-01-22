@@ -10,6 +10,5 @@ import lombok.*;
 public class CreateEnrollmentRequest {
     private Long userId;
     private Long courseId;
-    private Double progress;
     private Boolean isInstructor;
 }

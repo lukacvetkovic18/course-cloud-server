@@ -13,6 +13,5 @@ public class UpdateEnrollmentRequest {
     private Long id;
     private Optional<Long> userId;
     private Optional<Long> courseId;
-    private Optional<Double> progress;
     private Optional<Boolean> isInstructor;
 }
