@@ -3,6 +3,7 @@ package com.example.demo.api.course;
 import com.example.demo.api.course.courseModels.CreateCourseRequest;
 import com.example.demo.api.course.courseModels.UpdateCourseRequest;
 import com.example.demo.api.user.User;
+import com.example.demo.api.user.userModels.UserResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -78,4 +79,8 @@ public class CourseController {
         return courseService.getOwnerOfCourse(id);
     }
 
+    @GetMapping(path = "/search")
+    public List<Course> getCourseSearchResults(@RequestParam("query") String query) {
+        return courseService.getCourseSearchResults(query);
+    }
 }

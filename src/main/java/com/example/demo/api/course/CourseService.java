@@ -138,4 +138,8 @@ public class CourseService {
     public User getOwnerOfCourse(Long courseId) {
         return courseRepository.findOwnerOfCourse(courseId);
     }
+
+    public List<Course> getCourseSearchResults(String query) {
+        return courseRepository.findCoursesBySearchQuery(query);
+    }
 }

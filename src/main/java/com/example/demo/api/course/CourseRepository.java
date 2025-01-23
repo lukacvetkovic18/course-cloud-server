@@ -21,4 +21,10 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     @Query("SELECT e.user FROM Enrollment e WHERE e.course.id = :courseId AND e.isInstructor = true")
     User findOwnerOfCourse(@Param("courseId") Long courseId);
 
+    @Query("SELECT c FROM Course c WHERE " +
+            "LOWER(c.title) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+            "LOWER(c.shortDescription) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+            "LOWER(c.description) LIKE LOWER(CONCAT('%', :query, '%'))")
+    List<Course> findCoursesBySearchQuery(@Param("query") String query);
+
 }

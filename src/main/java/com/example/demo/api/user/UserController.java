@@ -79,4 +79,9 @@ public class UserController {
         return userService.updatePassword(newPassword);
     }
 
+    @GetMapping(path = "/search")
+    public List<UserResponse> getInstructorSearchResults(@RequestParam("query") String query) {
+        return userService.getInstructorSearchResults(query);
+    }
+
 }

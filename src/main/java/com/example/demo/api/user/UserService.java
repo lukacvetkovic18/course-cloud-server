@@ -16,6 +16,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -269,5 +270,22 @@ public class UserService {
             throw new Exception("New password can't be the same as old password.");
         }
 
+    }
+    public List<UserResponse> getInstructorSearchResults(String query) {
+        List<User> users = userRepository.findInstructorsBySearchQuery(query);
+        return users.stream()
+                .map(user -> UserResponse.builder()
+                        .id(user.getId())
+                        .firstName(user.getFirstName())
+                        .lastName(user.getLastName())
+                        .email(user.getEmail())
+                        .password(user.getPassword())
+                        .dateOfBirth(user.getDateOfBirth())
+                        .gender(user.getGender())
+                        .isActive(user.getIsActive())
+                        .profilePicture(user.getProfilePicture())
+                        .userRoles(user.getUserRoles())
+                        .build())
+                .collect(Collectors.toList());
     }
 }
