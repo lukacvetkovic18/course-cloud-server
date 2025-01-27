@@ -3,6 +3,7 @@ package com.example.demo.api.quizAttempt.quizAttemptModels;
 import jakarta.persistence.Entity;
 import lombok.*;
 
+import java.util.List;
 import java.util.Map;
 
 @Getter
@@ -11,8 +12,7 @@ import java.util.Map;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
 public class QuizAttemptRequest {
-    private Map<Long, Long> selectedAnswerIds;
+    private Map<Long, List<Long>> selectedAnswerIds;
     private Map<Long, String> textAnswers;
 }

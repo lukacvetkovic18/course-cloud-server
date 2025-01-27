@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class QuizAttemptService {
@@ -45,13 +46,13 @@ public class QuizAttemptService {
 
 
     @Transactional
-    public QuizAttempt createQuizAttempt(Long userId, Long quizId, List<Long> selectedAnswerIds, Map<Long, String> textAnswers) {
+    public QuizAttempt createQuizAttempt(Long userId, Long quizId, Map<Long, List<Long>> selectedAnswerIds, Map<Long, String> textAnswers) {
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         Quiz quiz = quizRepository.findById(quizId).orElseThrow(() -> new RuntimeException("Quiz not found"));
 
         List<Question> questions = questionRepository.findQuestionsByQuizId(quizId);
         int totalQuestions = questions.size();
-        int correctAnswers = 0;
+        double correctAnswers = 0;
 
         QuizAttempt quizAttempt = new QuizAttempt();
         quizAttempt.setUser(user);
@@ -61,38 +62,65 @@ public class QuizAttemptService {
         quizAttempt = quizAttemptRepository.save(quizAttempt);
 
         for (Question question : questions) {
-            QuizAttemptAnswer attemptAnswer = new QuizAttemptAnswer();
-            attemptAnswer.setQuizAttempt(quizAttempt);
-            attemptAnswer.setQuestion(question);
-
-            if (question.getQuestionType().getId() == 1) { // Text question
+            if (question.getQuestionType().getId() == 1) {
+                //text question
+                Answer correctAnswer = answerRepository.findAnswersByQuestionId(question.getId()).getFirst();
                 String userAnswer = textAnswers.get(question.getId());
+                QuizAttemptAnswer attemptAnswer = new QuizAttemptAnswer();
+                attemptAnswer.setQuizAttempt(quizAttempt);
+                attemptAnswer.setQuestion(question);
                 attemptAnswer.setTextAnswer(userAnswer);
-                boolean isCorrect = checkTextAnswer(question, userAnswer);
+                boolean isCorrect = userAnswer.equalsIgnoreCase(correctAnswer.getTitle());
                 attemptAnswer.setIsCorrect(isCorrect);
                 if (isCorrect) correctAnswers++;
-            } else { // Single or multiple choice
-                Answer selectedAnswer = answerRepository.findById(selectedAnswerIds.get(Math.toIntExact(question.getId())))
+                quizAttemptAnswerRepository.save(attemptAnswer);
+            } else if (question.getQuestionType().getId() == 2) {
+                //single choice
+                Answer selectedAnswer = answerRepository.findById(selectedAnswerIds.get(question.getId()).getFirst())
                         .orElseThrow(() -> new RuntimeException("Answer not found"));
+                QuizAttemptAnswer attemptAnswer = new QuizAttemptAnswer();
+                attemptAnswer.setQuizAttempt(quizAttempt);
+                attemptAnswer.setQuestion(question);
                 attemptAnswer.setSelectedAnswer(selectedAnswer);
                 attemptAnswer.setIsCorrect(selectedAnswer.getIsCorrect());
                 if (selectedAnswer.getIsCorrect()) correctAnswers++;
-            }
+                quizAttemptAnswerRepository.save(attemptAnswer);
+            } else if (question.getQuestionType().getId() == 3) {
+                //multiple choice
+                List<Answer> correctAnswersList = answerRepository.findCorrectAnswersByQuestionId(question.getId());
+                List<Long> correctAnswerIds = correctAnswersList.stream().map(Answer::getId).toList();
 
-            quizAttemptAnswerRepository.save(attemptAnswer);
+                List<Long> userSelectedAnswerIds = selectedAnswerIds.get(question.getId());
+
+                long correctSelectedCount = userSelectedAnswerIds.stream().filter(correctAnswerIds::contains).count();
+                long incorrectSelectedCount = userSelectedAnswerIds.size() - correctSelectedCount;
+
+                if (correctSelectedCount == correctAnswerIds.size() && incorrectSelectedCount == 0) {
+                    correctAnswers++;
+                } else if (correctSelectedCount > incorrectSelectedCount) {
+                    double percentageOfSelectedAnswers = (double) 1 / userSelectedAnswerIds.size();
+                    correctAnswers += (correctSelectedCount - incorrectSelectedCount) * percentageOfSelectedAnswers;
+                }
+
+                for (Long answerId : userSelectedAnswerIds) {
+                    Answer selectedAnswer = answerRepository.findById(answerId)
+                            .orElseThrow(() -> new RuntimeException("Answer not found"));
+                    QuizAttemptAnswer attemptAnswer = new QuizAttemptAnswer();
+                    attemptAnswer.setQuizAttempt(quizAttempt);
+                    attemptAnswer.setQuestion(question);
+                    attemptAnswer.setSelectedAnswer(selectedAnswer);
+                    attemptAnswer.setIsCorrect(correctAnswerIds.contains(answerId));
+                    quizAttemptAnswerRepository.save(attemptAnswer);
+                }
+            }
         }
 
         quizAttempt.setCorrectAnswers(correctAnswers);
-        quizAttempt.setScore((correctAnswers * 100) / totalQuestions); // Score in percentage
+        quizAttempt.setScore((correctAnswers * 100) / totalQuestions);
         return quizAttemptRepository.save(quizAttempt);
     }
 
-    private boolean checkTextAnswer(Question question, String userAnswer) {
-        // Implement logic to check if text answer is correct
-        return userAnswer.equalsIgnoreCase("expected answer"); // Replace with actual answer checking logic
-    }
-
-    public List<QuizAttempt> getUserAttempts(Long userId) {
-        return quizAttemptRepository.findByUserId(userId);
-    }
+//    public List<QuizAttempt> getUserAttempts(Long userId) {
+//        return quizAttemptRepository.findByUserId(userId);
+//    }
 }

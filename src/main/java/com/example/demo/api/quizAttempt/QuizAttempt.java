@@ -38,13 +38,13 @@ public class QuizAttempt {
     private Quiz quiz;
 
     @Column(nullable = false)
-    private Integer score;
+    private Double score;
 
     @Column(nullable = false)
     private Integer totalQuestions;
 
     @Column(nullable = false)
-    private Integer correctAnswers;
+    private Double correctAnswers;
 
     @Column(nullable = false, updatable = false)
     @CreationTimestamp

@@ -24,8 +24,8 @@ public class QuizAttemptController {
         QuizAttempt quizAttempt = quizAttemptService.createQuizAttempt(userId, quizId, request.getSelectedAnswerIds(), request.getTextAnswers());
         return ResponseEntity.ok(quizAttempt);
     }
-    @GetMapping("/{userId}/attempts")
-    public ResponseEntity<List<QuizAttempt>> getUserAttempts(@PathVariable Long userId) {
-        return ResponseEntity.ok(quizAttemptService.getUserAttempts(userId));
-    }
+//    @GetMapping("/{userId}/attempts")
+//    public ResponseEntity<List<QuizAttempt>> getUserAttempts(@PathVariable Long userId) {
+//        return ResponseEntity.ok(quizAttemptService.getUserAttempts(userId));
+//    }
 }
