@@ -16,12 +16,12 @@ public class QuizAttemptController {
         this.quizAttemptService = quizAttemptService;
     }
 
-    @PostMapping("/{userId}/{quizId}")
+    @PostMapping()
     public ResponseEntity<QuizAttempt> submitQuizAttempt(
-            @PathVariable Long userId,
-            @PathVariable Long quizId,
+//            @PathVariable Long userId,
+//            @PathVariable Long quizId,
             @RequestBody QuizAttemptRequest request) {
-        QuizAttempt quizAttempt = quizAttemptService.createQuizAttempt(userId, quizId, request.getSelectedAnswerIds(), request.getTextAnswers());
+        QuizAttempt quizAttempt = quizAttemptService.createQuizAttempt(request.getUserId(), request.getQuizId(), request.getSelectedAnswerIds(), request.getTextAnswers());
         return ResponseEntity.ok(quizAttempt);
     }
 //    @GetMapping("/{userId}/attempts")

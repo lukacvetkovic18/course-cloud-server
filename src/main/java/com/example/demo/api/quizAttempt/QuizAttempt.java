@@ -37,13 +37,13 @@ public class QuizAttempt {
     @JoinColumn(name = "quiz_id", nullable = false)
     private Quiz quiz;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Double score;
 
     @Column(nullable = false)
     private Integer totalQuestions;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Double correctAnswers;
 
     @Column(nullable = false, updatable = false)
