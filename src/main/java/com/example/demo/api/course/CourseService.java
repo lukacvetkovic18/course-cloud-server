@@ -4,6 +4,7 @@ import com.example.demo.api.answer.Answer;
 import com.example.demo.api.answer.AnswerRepository;
 import com.example.demo.api.course.courseModels.CreateCourseRequest;
 import com.example.demo.api.course.courseModels.UpdateCourseRequest;
+import com.example.demo.api.enrollment.Enrollment;
 import com.example.demo.api.enrollment.EnrollmentRepository;
 import com.example.demo.api.file.FileRepository;
 import com.example.demo.api.lesson.LessonRepository;
@@ -13,6 +14,8 @@ import com.example.demo.api.quiz.QuizRepository;
 import com.example.demo.api.quiz.QuizService;
 import com.example.demo.api.user.User;
 import com.example.demo.api.user.UserRepository;
+import com.example.demo.api.user.UserService;
+import com.example.demo.api.user.userModels.UserResponse;
 import com.example.demo.config.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,10 +59,20 @@ public class CourseService {
     }
 
     public Course createEmptyCourse() {
-        Course course = Course.builder()
+        String token = getBearerTokenHeader();
+        String email = jwtService.extractUsername(token);
+        User user = userRepository.findByEmail(email).orElseThrow();
+        Course course = courseRepository.save(Course.builder()
                 .isActive(false)
+                .build()
+        );
+        Enrollment enrollment = Enrollment.builder()
+                .course(course)
+                .user(user)
+                .isInstructor(true)
                 .build();
-        return courseRepository.save(course);
+        enrollmentRepository.save(enrollment);
+        return course;
     }
 
     public Course createCourse(CreateCourseRequest courseRequest) {

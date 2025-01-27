@@ -31,10 +31,10 @@ public class Course {
     @Column()
     private String title;
 
-    @Column()
+    @Column(length = 1000)
     private String shortDescription;
 
-    @Column()
+    @Column(length = 5000)
     private String description;
 
     @Column()
