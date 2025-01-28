@@ -46,4 +46,9 @@ public class QuizAttemptController {
     public ResponseEntity<List<QuizAttempt>> getUserAttempts(@PathVariable Long userId) {
         return ResponseEntity.ok(quizAttemptService.getUserAttempts(userId));
     }
+
+    @GetMapping("/course/{courseId}")
+    public ResponseEntity<List<QuizAttempt>> getQuizAttemptsByCourseId(@PathVariable Long courseId) {
+        return ResponseEntity.ok(quizAttemptService.getQuizAttemptsByCourseId(courseId));
+    }
 }

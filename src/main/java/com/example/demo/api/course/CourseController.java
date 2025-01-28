@@ -1,10 +1,12 @@
 package com.example.demo.api.course;
 
+import com.example.demo.api.course.courseModels.BulkCourseRequest;
 import com.example.demo.api.course.courseModels.CreateCourseRequest;
 import com.example.demo.api.course.courseModels.UpdateCourseRequest;
 import com.example.demo.api.user.User;
 import com.example.demo.api.user.userModels.UserResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -64,6 +66,11 @@ public class CourseController {
         return courseService.getMyCourses();
     }
 
+    @GetMapping(path = "/student/logged-in")
+    public List<Course> getMyEnrolledCourses() {
+        return courseService.getMyEnrolledCourses();
+    }
+
     @GetMapping(path = "/is-enrolled/{id}")
     public boolean isUserEnrolledInCourse(@PathVariable("id") long id) {
         return courseService.isUserEnrolledInCourse(id);
@@ -79,8 +86,23 @@ public class CourseController {
         return courseService.getOwnerOfCourse(id);
     }
 
+    @GetMapping(path = "/students/{id}")
+    public List<User> getStudentsInCourse(@PathVariable("id") long id) {
+        return courseService.getStudentsInCourse(id);
+    }
+
     @GetMapping(path = "/search")
     public List<Course> getCourseSearchResults(@RequestParam("query") String query) {
         return courseService.getCourseSearchResults(query);
+    }
+
+    @GetMapping("/random")
+    public List<Course> getRandomCourses() {
+        return courseService.getRandomCourses();
+    }
+
+    @PostMapping("/bulk-create")
+    public ResponseEntity<Course> createCourseWithLessonsAndQuiz(@RequestBody BulkCourseRequest request) {
+        return ResponseEntity.ok(courseService.createCourseWithLessonsAndQuiz(request));
     }
 }
