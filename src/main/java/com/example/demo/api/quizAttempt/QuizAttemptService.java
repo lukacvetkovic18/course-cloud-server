@@ -120,7 +120,17 @@ public class QuizAttemptService {
         return quizAttemptRepository.save(quizAttempt);
     }
 
-//    public List<QuizAttempt> getUserAttempts(Long userId) {
-//        return quizAttemptRepository.findByUserId(userId);
-//    }
+
+    public QuizAttempt getQuizAttemptByQuizAndUser(Long quizId, Long userId) {
+        return quizAttemptRepository.findByQuizIdAndUserId(quizId, userId)
+                .orElseThrow(() -> new RuntimeException("Quiz attempt not found"));
+    }
+
+    public List<QuizAttemptAnswer> getQuizAttemptAnswersByQuizAttempt(Long quizAttemptId) {
+        return quizAttemptAnswerRepository.findByQuizAttemptId(quizAttemptId);
+    }
+
+    public List<QuizAttempt> getUserAttempts(Long userId) {
+        return quizAttemptRepository.findByUserId(userId);
+    }
 }
