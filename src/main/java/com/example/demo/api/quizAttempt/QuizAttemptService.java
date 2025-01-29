@@ -44,7 +44,6 @@ public class QuizAttemptService {
         this.answerRepository = answerRepository;
     }
 
-
     @Transactional
     public QuizAttempt createQuizAttempt(Long userId, Long quizId, Map<Long, List<Long>> selectedAnswerIds, Map<Long, String> textAnswers) {
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));

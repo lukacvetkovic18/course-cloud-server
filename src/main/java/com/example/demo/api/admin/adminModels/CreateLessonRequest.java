@@ -1,7 +1,8 @@
-package com.example.demo.api.lesson.lessonModels;
+package com.example.demo.api.admin.adminModels;
 
-import jakarta.persistence.Column;
 import lombok.*;
+
+import java.util.List;
 
 @Getter
 @Data
@@ -11,4 +12,5 @@ import lombok.*;
 public class CreateLessonRequest {
     private Long courseId;
     private String title;
+    private List<FileRequest> files;
 }

@@ -42,6 +42,9 @@ public class User implements UserDetails {
     @Column(unique = true)
     private String email;
 
+    @Column(unique = true)
+    private String slug;
+
     @Column()
     private String password;
 
@@ -68,6 +71,9 @@ public class User implements UserDetails {
 
     @Column()
     private String linkedIn;
+
+    @Column()
+    private Boolean isAdmin;
 
     @ManyToMany()
     @JoinTable(

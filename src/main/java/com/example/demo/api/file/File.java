@@ -1,6 +1,7 @@
 package com.example.demo.api.file;
 
 import com.example.demo.api.lesson.Lesson;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -38,6 +39,7 @@ public class File {
 
     @Lob()
     @Column(name = "data")
+    @JsonIgnore
     private byte[] data;
 
     @ManyToOne

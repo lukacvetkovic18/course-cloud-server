@@ -44,8 +44,6 @@ public class LessonService {
         Lesson lesson = Lesson.builder()
                 .course(course)
                 .title(lessonRequest.getTitle())
-                .content(lessonRequest.getContent())
-                .lessonOrder(lessonRequest.getLessonOrder())
                 .build();
         return lessonRepository.save(lesson);
     }
@@ -66,8 +64,6 @@ public class LessonService {
             lesson.setCourse(course);
         }
         if(lessonRequest.getTitle() != null) lesson.setTitle(lessonRequest.getTitle().get());
-        if(lessonRequest.getContent() != null) lesson.setContent(lessonRequest.getContent().get());
-        if(lessonRequest.getLessonOrder() != null) lesson.setLessonOrder(lessonRequest.getLessonOrder().get());
 
         return lessonRepository.save(lesson);
     }

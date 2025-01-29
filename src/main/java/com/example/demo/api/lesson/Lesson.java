@@ -34,12 +34,6 @@ public class Lesson {
 
     @Column()
     private String title;
-    
-    @Column()
-    private String content;
-    
-    @Column()
-    private Integer lessonOrder;
 
     @Column(nullable = false, updatable = false)
     @CreationTimestamp
