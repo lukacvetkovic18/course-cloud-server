@@ -218,8 +218,6 @@ public class CourseService {
         for (LessonRequest lessonRequest : request.getLessons()) {
             Lesson lesson = Lesson.builder()
                     .title(lessonRequest.getTitle())
-                    .content(lessonRequest.getContent())
-                    .lessonOrder(lessonRequest.getLessonOrder())
                     .course(course)
                     .build();
             lessons.add(lesson);
