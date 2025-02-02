@@ -39,7 +39,6 @@ public class File {
 
     @Lob()
     @Column(name = "data")
-    @JsonIgnore
     private byte[] data;
 
     @ManyToOne

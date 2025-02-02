@@ -101,6 +101,12 @@ public class CourseController {
         return courseService.getRandomCourses();
     }
 
+    @GetMapping("/without-quiz")
+    public ResponseEntity<List<Course>> getCoursesWithoutQuiz() {
+        List<Course> courses = courseService.getCoursesWithoutQuiz();
+        return ResponseEntity.ok(courses);
+    }
+
     @PostMapping("/bulk-create")
     public ResponseEntity<Course> createCourseWithLessonsAndQuiz(@RequestBody BulkCourseRequest request) {
         return ResponseEntity.ok(courseService.createCourseWithLessonsAndQuiz(request));

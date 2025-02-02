@@ -12,6 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class QuestionResponse {
+    private Long id;
     private String title;
     private QuestionType questionType;
     private List<Answer> answers;

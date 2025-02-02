@@ -37,4 +37,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     @Query("SELECT c FROM Course c ORDER BY RANDOM()")
     List<Course> findRandomCourses(Pageable pageable);
 
+    @Query("SELECT c FROM Course c WHERE c.quiz IS NULL")
+    List<Course> findCoursesWithoutQuiz();
+
 }

@@ -184,6 +184,9 @@ public class CourseService {
         Pageable pageable = PageRequest.of(0, 3); // 0 for the first page, 3 for the number of courses to fetch
         return courseRepository.findRandomCourses(pageable);
     }
+    public List<Course> getCoursesWithoutQuiz() {
+        return courseRepository.findCoursesWithoutQuiz();
+    }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
     @Transactional

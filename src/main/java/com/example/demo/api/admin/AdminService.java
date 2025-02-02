@@ -313,9 +313,19 @@ public class AdminService {
 
             courseRequest.getOwnerId().ifPresent(ownerId -> {
                 User newOwner = userRepository.findById(ownerId).orElseThrow();
-                Enrollment currentOwnerEnrollment = enrollmentRepository.findOwnerEnrollmentByCourseId(existingCourse.getId());
-                currentOwnerEnrollment.setUser(newOwner);
-                enrollmentRepository.save(currentOwnerEnrollment);
+                Optional<Enrollment> currentOwnerEnrollment = enrollmentRepository.findOwnerEnrollmentByCourseId(existingCourse.getId());
+                if(currentOwnerEnrollment.isEmpty()) {
+                    enrollmentRepository.save(
+                            Enrollment.builder()
+                                    .course(existingCourse)
+                                    .user(newOwner)
+                                    .isInstructor(true)
+                                    .build()
+                    );
+                } else {
+                    currentOwnerEnrollment.get().setUser(newOwner);
+                    enrollmentRepository.save(currentOwnerEnrollment.get());
+                }
             });
 
             courseRepository.save(existingCourse);
@@ -327,7 +337,7 @@ public class AdminService {
                     .description(existingCourse.getDescription())
                     .isActive(existingCourse.getIsActive())
                     .image(existingCourse.getImage())
-                    .owner(enrollmentRepository.findOwnerEnrollmentByCourseId(existingCourse.getId()).getUser())
+                    .owner(enrollmentRepository.findOwnerEnrollmentByCourseId(existingCourse.getId()).get().getUser())
                     .createdAt(existingCourse.getCreatedAt())
                     .build();
         }
@@ -339,6 +349,7 @@ public class AdminService {
         courseRepository.deleteAll();
     }
 
+    @Transactional
     public void deleteCourse(Long id) {
         enrollmentRepository.deleteEnrollmentsByCourseId(id);
 
@@ -409,7 +420,7 @@ public class AdminService {
                         .title(lesson.getTitle())
                         .course(lesson.getCourse())
                         .createdAt(lesson.getCreatedAt())
-                        .files(fileRepository.findFilesByLessonId(lesson.getId()))
+//                        .files(fileRepository.findFilesByLessonId(lesson.getId()))
                         .build())
                 .collect(Collectors.toList());
     }
@@ -541,6 +552,7 @@ public class AdminService {
 
     private QuestionResponse mapToQuestionResponse(Question question) {
         return QuestionResponse.builder()
+                .id(question.getId())
                 .title(question.getTitle())
                 .questionType(question.getQuestionType())
                 .answers(answerRepository.findAnswersByQuestionId(question.getId()))
@@ -651,7 +663,7 @@ public class AdminService {
             answerRepository.deleteAnswersByQuestionId(question.getId());
         }
         questionRepository.deleteQuestionsByQuizId(quiz.getId());
-        quizRepository.deleteById(id);
+        quizRepository.deleteQuizByCourseId(quiz.getCourse().getId());
     }
 
     @Transactional

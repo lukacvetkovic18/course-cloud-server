@@ -4,6 +4,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     @Modifying
@@ -11,5 +13,5 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     void deleteEnrollmentsByCourseId(Long courseId);
 
     @Query("SELECT e FROM Enrollment e WHERE e.course.id = ?1 AND e.isInstructor = true")
-    Enrollment findOwnerEnrollmentByCourseId(Long courseId);
+    Optional<Enrollment> findOwnerEnrollmentByCourseId(Long courseId);
 }
