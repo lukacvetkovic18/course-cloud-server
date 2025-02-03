@@ -66,6 +66,13 @@ public class UserService {
         if(userRepository.findByEmail(createUserInput.getEmail()).isPresent()) {
             throw new Exception(STR."User with email: \{createUserInput.getEmail()} already exists");
         }
+
+        String slug = createUserInput.getFirstName().toLowerCase() + "-" + createUserInput.getLastName().toLowerCase();
+        int num = 1;
+        while (userRepository.findBySlug(slug).isPresent()) {
+            slug = createUserInput.getFirstName().toLowerCase() + "-" + createUserInput.getLastName().toLowerCase() + "-" + num++;
+        }
+
         List<UserRole> userRoles = userRoleRepository.findAllById(createUserInput.getUserRoleIds());
         User user = User.builder()
                 .firstName(createUserInput.getFirstName())
@@ -75,6 +82,7 @@ public class UserService {
                 .dateOfBirth(createUserInput.getDateOfBirth())
                 .gender(createUserInput.getGender())
                 .isActive(true)
+                .slug(slug)
                 .userRoles(userRoles)
                 .build();
         userRepository.save(user);
@@ -102,6 +110,7 @@ public class UserService {
                 .gender(user.getGender())
                 .address(user.getAddress())
                 .isActive(user.getIsActive())
+                .slug(user.getSlug())
                 .profilePicture(user.getProfilePicture())
                 .phoneNumber(user.getPhoneNumber())
                 .instagram(user.getInstagram())
@@ -154,6 +163,7 @@ public class UserService {
                         .gender(user.getGender())
                         .address(user.getAddress())
                         .isActive(user.getIsActive())
+                        .slug(user.getSlug())
                         .profilePicture(user.getProfilePicture())
                         .phoneNumber(user.getPhoneNumber())
                         .instagram(user.getInstagram())
@@ -176,6 +186,7 @@ public class UserService {
                 .gender(user.getGender())
                 .address(user.getAddress())
                 .isActive(user.getIsActive())
+                .slug(user.getSlug())
                 .profilePicture(user.getProfilePicture())
                 .phoneNumber(user.getPhoneNumber())
                 .instagram(user.getInstagram())
@@ -186,30 +197,38 @@ public class UserService {
 
     // Update user
     public UserResponse updateUser(UpdateUserRequest updateUserInput) {
-        Optional<User> user = userRepository.findById(updateUserInput.getId());
-        List<UserRole> userRoles = new ArrayList<>();
-        if(updateUserInput.getUserRoleIds() != null) userRoles = userRoleRepository.findAllById(updateUserInput.getUserRoleIds().get());
-        if (user.isPresent()) {
-            User existingUser = user.get();
-            if(updateUserInput.getFirstName() != null) existingUser.setFirstName(updateUserInput.getFirstName().get());
-            if(updateUserInput.getLastName() != null) existingUser.setLastName(updateUserInput.getLastName().get());
-            if(updateUserInput.getEmail() != null) existingUser.setEmail(updateUserInput.getEmail().get());
-            if(updateUserInput.getDateOfBirth() != null) existingUser.setDateOfBirth(updateUserInput.getDateOfBirth().get());
-            if(updateUserInput.getGender() != null) existingUser.setGender(updateUserInput.getGender().get());
-            if(updateUserInput.getAddress() != null) existingUser.setAddress(updateUserInput.getAddress().get());
-            if(updateUserInput.getIsActive() != null) existingUser.setIsActive(updateUserInput.getIsActive().get());
-            if(updateUserInput.getProfilePicture() != null) existingUser.setProfilePicture(updateUserInput.getProfilePicture().get());
-            if(updateUserInput.getPhoneNumber() != null) existingUser.setPhoneNumber(updateUserInput.getPhoneNumber().get());
-            if(updateUserInput.getInstagram() != null) existingUser.setInstagram(updateUserInput.getInstagram().get());
-            if(updateUserInput.getLinkedIn() != null) existingUser.setLinkedIn(updateUserInput.getLinkedIn().get());
-            if(!userRoles.isEmpty()) existingUser.setUserRoles(userRoles);
+        Optional<User> userOptional = userRepository.findById(updateUserInput.getId());
+
+        if (userOptional.isPresent()) {
+            User existingUser = userOptional.get();
+
+            updateUserInput.getFirstName().ifPresent(existingUser::setFirstName);
+            updateUserInput.getLastName().ifPresent(existingUser::setLastName);
+            updateUserInput.getEmail().ifPresent(existingUser::setEmail);
+            updateUserInput.getDateOfBirth().ifPresent(existingUser::setDateOfBirth);
+            updateUserInput.getGender().ifPresent(existingUser::setGender);
+            updateUserInput.getAddress().ifPresent(existingUser::setAddress);
+            updateUserInput.getIsActive().ifPresent(existingUser::setIsActive);
+            updateUserInput.getProfilePicture().ifPresent(existingUser::setProfilePicture);
+            updateUserInput.getPhoneNumber().ifPresent(existingUser::setPhoneNumber);
+            updateUserInput.getInstagram().ifPresent(existingUser::setInstagram);
+            updateUserInput.getLinkedIn().ifPresent(existingUser::setLinkedIn);
+
+            if (updateUserInput.getUserRoleIds().isPresent()) {
+                List<UserRole> userRoles = userRoleRepository.findAllById(updateUserInput.getUserRoleIds().get());
+                if (!userRoles.isEmpty()) {
+                    existingUser.setUserRoles(userRoles);
+                }
+            }
+
             userRepository.save(existingUser);
+
             return UserResponse.builder()
                     .id(existingUser.getId())
                     .firstName(existingUser.getFirstName())
                     .lastName(existingUser.getLastName())
                     .email(existingUser.getEmail())
-                    .password(existingUser.getPassword())
+                    .slug(existingUser.getSlug())
                     .dateOfBirth(existingUser.getDateOfBirth())
                     .gender(existingUser.getGender())
                     .address(existingUser.getAddress())
@@ -221,6 +240,7 @@ public class UserService {
                     .userRoles(existingUser.getUserRoles())
                     .build();
         }
+
         return null;
     }
 
@@ -249,7 +269,13 @@ public class UserService {
                         .password(user.getPassword())
                         .dateOfBirth(user.getDateOfBirth())
                         .gender(user.getGender())
+                        .address(user.getAddress())
                         .isActive(user.getIsActive())
+                        .slug(user.getSlug())
+                        .profilePicture(user.getProfilePicture())
+                        .phoneNumber(user.getPhoneNumber())
+                        .instagram(user.getInstagram())
+                        .linkedIn(user.getLinkedIn())
                         .userRoles(user.getUserRoles())
                         .build())
                 .collect(Collectors.toList());
@@ -282,10 +308,66 @@ public class UserService {
                         .password(user.getPassword())
                         .dateOfBirth(user.getDateOfBirth())
                         .gender(user.getGender())
+                        .address(user.getAddress())
                         .isActive(user.getIsActive())
+                        .slug(user.getSlug())
                         .profilePicture(user.getProfilePicture())
+                        .phoneNumber(user.getPhoneNumber())
+                        .instagram(user.getInstagram())
+                        .linkedIn(user.getLinkedIn())
                         .userRoles(user.getUserRoles())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    public boolean IsTokenValid() {
+        String token = getBearerTokenHeader();
+        String email = jwtService.extractUsername(token);
+        User user = userRepository.findByEmail(email).orElseThrow();
+        return jwtService.isTokenValid(token, user);
+    }
+
+    public UserResponse getUserBySlug(String slug) {
+        User user = userRepository.findBySlug(slug).orElseThrow();
+        return UserResponse.builder()
+                .id(user.getId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .password(user.getPassword())
+                .dateOfBirth(user.getDateOfBirth())
+                .gender(user.getGender())
+                .address(user.getAddress())
+                .isActive(user.getIsActive())
+                .slug(user.getSlug())
+                .profilePicture(user.getProfilePicture())
+                .phoneNumber(user.getPhoneNumber())
+                .instagram(user.getInstagram())
+                .linkedIn(user.getLinkedIn())
+                .userRoles(user.getUserRoles())
+                .build();
+    }
+
+    public boolean isUserStudent() {
+        String token = getBearerTokenHeader();
+        String email = jwtService.extractUsername(token);
+        User user = userRepository.findByEmail(email).orElseThrow();
+        List<String> roles = userRepository.findRolesByUserId(user.getId());
+        return roles.contains("student");
+    }
+
+    public boolean isUserInstructor() {
+        String token = getBearerTokenHeader();
+        String email = jwtService.extractUsername(token);
+        User user = userRepository.findByEmail(email).orElseThrow();
+        List<String> roles = userRepository.findRolesByUserId(user.getId());
+        return roles.contains("instructor");
+    }
+
+    public boolean isUserAdmin() {
+        String token = getBearerTokenHeader();
+        String email = jwtService.extractUsername(token);
+        User user = userRepository.findByEmail(email).orElseThrow();
+        return user.getIsAdmin();
     }
 }

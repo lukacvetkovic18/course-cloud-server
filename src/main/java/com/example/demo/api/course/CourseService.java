@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.example.demo.api.user.UserService.getBearerTokenHeader;
 
@@ -87,70 +88,197 @@ public class CourseService {
         return course;
     }
 
-    public Course createCourse(CreateCourseRequest courseRequest) {
-        Course course = Course.builder()
+    public CourseResponse createCourse(CreateCourseRequest courseRequest) {
+        String token = getBearerTokenHeader();
+        String email = jwtService.extractUsername(token);
+        User user = userRepository.findByEmail(email).orElseThrow();
+
+        String slug = courseRequest.getTitle().toLowerCase().replaceAll("\\s+", "-");
+
+        int num = 1;
+        while (courseRepository.findBySlug(slug).isPresent()) {
+            slug = courseRequest.getTitle().toLowerCase().replaceAll("\\s+", "-") + "-" + num++;
+        }
+
+        Course course = courseRepository.save(Course.builder()
                 .title(courseRequest.getTitle())
                 .shortDescription(courseRequest.getShortDescription())
                 .description(courseRequest.getDescription())
                 .isActive(courseRequest.getIsActive())
-                .image(courseRequest.getImage())
+                .image(courseRequest.getImage().orElse(null))
+                .slug(slug)
+                .build());
+
+        Enrollment enrollment = Enrollment.builder()
+                .course(course)
+                .user(user)
+                .isInstructor(true)
                 .build();
-        return courseRepository.save(course);
+        enrollmentRepository.save(enrollment);
+
+        return CourseResponse.builder()
+                .id(course.getId())
+                .title(course.getTitle())
+                .shortDescription(course.getShortDescription())
+                .description(course.getDescription())
+                .isActive(course.getIsActive())
+                .image(course.getImage())
+                .owner(user)
+                .createdAt(course.getCreatedAt())
+                .slug(course.getSlug())
+                .build();
     }
 
-    public List<Course> getAllCourses() {
-        return courseRepository.findAll();
+    public List<CourseResponse> getAllCourses() {
+        List<Course> courses = courseRepository.findAll();
+        return courses.stream()
+                .map(course -> CourseResponse.builder()
+                        .id(course.getId())
+                        .title(course.getTitle())
+                        .shortDescription(course.getShortDescription())
+                        .description(course.getDescription())
+                        .isActive(course.getIsActive())
+                        .image(course.getImage())
+                        .owner(courseRepository.findOwnerOfCourse(course.getId()))
+                        .createdAt(course.getCreatedAt())
+                        .slug(course.getSlug())
+                        .build())
+                .collect(Collectors.toList());
     }
 
-    public Optional<Course> getCourseById(Long id) {
-        return courseRepository.findById(id);
+    public CourseResponse getCourseById(Long id) {
+        Course course = courseRepository.findById(id).orElseThrow();
+        return CourseResponse.builder()
+                .id(course.getId())
+                .title(course.getTitle())
+                .shortDescription(course.getShortDescription())
+                .description(course.getDescription())
+                .isActive(course.getIsActive())
+                .image(course.getImage())
+                .owner(courseRepository.findOwnerOfCourse(course.getId()))
+                .createdAt(course.getCreatedAt())
+                .slug(course.getSlug())
+                .build();
     }
 
-    public Course updateCourse(UpdateCourseRequest courseRequest) {
-        Course course = courseRepository.findById(courseRequest.getId()).orElseThrow();
+    public CourseResponse updateCourse(UpdateCourseRequest courseRequest) {
+        Optional<Course> courseOptional = courseRepository.findById(courseRequest.getId());
 
-        if(courseRequest.getTitle() != null) course.setTitle(courseRequest.getTitle().get());
-        if(courseRequest.getShortDescription() != null) course.setShortDescription(courseRequest.getShortDescription().get());
-        if(courseRequest.getDescription() != null) course.setDescription(courseRequest.getDescription().get());
-        if(courseRequest.getIsActive() != null) course.setIsActive(courseRequest.getIsActive().get());
-        if(courseRequest.getImage() != null) course.setImage(courseRequest.getImage().get());
+        if (courseOptional.isPresent()) {
+            Course existingCourse = courseOptional.get();
 
-        return courseRepository.save(course);
+            courseRequest.getTitle().ifPresent(newTitle -> {
+                if (!newTitle.equals(existingCourse.getTitle())) {
+                    String newSlug = newTitle.toLowerCase().replaceAll("\\s+", "-");
+                    int num = 1;
+                    while (courseRepository.findBySlug(newSlug).isPresent()) {
+                        newSlug = newTitle.toLowerCase().replaceAll("\\s+", "-") + "-" + num++;
+                    }
+                    existingCourse.setSlug(newSlug);
+                }
+                existingCourse.setTitle(newTitle);
+            });
+            courseRequest.getShortDescription().ifPresent(existingCourse::setShortDescription);
+            courseRequest.getDescription().ifPresent(existingCourse::setDescription);
+            courseRequest.getIsActive().ifPresent(existingCourse::setIsActive);
+            courseRequest.getImage().ifPresent(existingCourse::setImage);
+
+            courseRepository.save(existingCourse);
+
+            return CourseResponse.builder()
+                    .id(existingCourse.getId())
+                    .title(existingCourse.getTitle())
+                    .shortDescription(existingCourse.getShortDescription())
+                    .description(existingCourse.getDescription())
+                    .isActive(existingCourse.getIsActive())
+                    .image(existingCourse.getImage())
+                    .owner(enrollmentRepository.findOwnerEnrollmentByCourseId(existingCourse.getId()).get().getUser())
+                    .createdAt(existingCourse.getCreatedAt())
+                    .slug(existingCourse.getSlug())
+                    .build();
+        }
+
+        return null;
     }
 
     public void deleteAllCourses() {
         courseRepository.deleteAll();
     }
 
+    @Transactional
     public void deleteCourse(Long id) {
         enrollmentRepository.deleteEnrollmentsByCourseId(id);
 
-        fileRepository.deleteFilesByCourseId(id);
-        lessonRepository.deleteLessonsByCourseId(id);
+        List<Lesson> lessons = lessonRepository.findLessonsByCourseId(id);
+        for (Lesson lesson : lessons) {
+            lesson.setCourse(null);
+            lessonRepository.save(lesson);
+        }
 
-        answerRepository.deleteAnswersByCourseId(id);
-        questionRepository.deleteQuestionsByCourseId(id);
-        quizRepository.deleteQuizByCourseId(id);
-
+        Optional<Quiz> quizOptional = quizRepository.findQuizByCourseId(id);
+        if (quizOptional.isPresent()) {
+            Quiz quiz = quizOptional.get();
+            quiz.setCourse(null);
+            quizRepository.save(quiz);
+        }
         courseRepository.deleteById(id);
     }
 
-    public List<Course> getInstructorCourses(Long userId) {
-        return courseRepository.findCoursesOfInstructor(userId);
+    public List<CourseResponse> getInstructorCourses(Long userId) {
+        List<Course> courses = courseRepository.findCoursesOfInstructor(userId);
+        return courses.stream()
+                .map(course -> CourseResponse.builder()
+                        .id(course.getId())
+                        .title(course.getTitle())
+                        .shortDescription(course.getShortDescription())
+                        .description(course.getDescription())
+                        .isActive(course.getIsActive())
+                        .image(course.getImage())
+                        .owner(courseRepository.findOwnerOfCourse(course.getId()))
+                        .createdAt(course.getCreatedAt())
+                        .slug(course.getSlug())
+                        .build())
+                .collect(Collectors.toList());
     }
 
-    public List<Course> getMyCourses() {
+    public List<CourseResponse> getMyCourses() {
         String token = getBearerTokenHeader();
         String email = jwtService.extractUsername(token);
         User user = userRepository.findByEmail(email).orElseThrow();
-        return courseRepository.findCoursesOfInstructor(user.getId());
+        List<Course> courses = courseRepository.findCoursesOfInstructor(user.getId());
+        return courses.stream()
+                .map(course -> CourseResponse.builder()
+                        .id(course.getId())
+                        .title(course.getTitle())
+                        .shortDescription(course.getShortDescription())
+                        .description(course.getDescription())
+                        .isActive(course.getIsActive())
+                        .image(course.getImage())
+                        .owner(courseRepository.findOwnerOfCourse(course.getId()))
+                        .createdAt(course.getCreatedAt())
+                        .slug(course.getSlug())
+                        .build())
+                .collect(Collectors.toList());
     }
 
-    public List<Course> getMyEnrolledCourses() {
+    public List<CourseResponse> getMyEnrolledCourses() {
         String token = getBearerTokenHeader();
         String email = jwtService.extractUsername(token);
         User user = userRepository.findByEmail(email).orElseThrow();
-        return courseRepository.findEnrolledCoursesOfUser(user.getId());
+        List<Course> courses = courseRepository.findEnrolledCoursesOfUser(user.getId());
+        return courses.stream()
+                .map(course -> CourseResponse.builder()
+                        .id(course.getId())
+                        .title(course.getTitle())
+                        .shortDescription(course.getShortDescription())
+                        .description(course.getDescription())
+                        .isActive(course.getIsActive())
+                        .image(course.getImage())
+                        .owner(courseRepository.findOwnerOfCourse(course.getId()))
+                        .createdAt(course.getCreatedAt())
+                        .slug(course.getSlug())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     public boolean isUserEnrolledInCourse(Long courseId) {
@@ -175,17 +303,69 @@ public class CourseService {
         return courseRepository.findStudentsInCourse(courseId);
     }
 
-    public List<Course> getCourseSearchResults(String query) {
-        return courseRepository.findCoursesBySearchQuery(query);
+    public List<CourseResponse> getCourseSearchResults(String query) {
+        List<Course> courses = courseRepository.findCoursesBySearchQuery(query);
+        return courses.stream()
+                .map(course -> CourseResponse.builder()
+                        .id(course.getId())
+                        .title(course.getTitle())
+                        .shortDescription(course.getShortDescription())
+                        .description(course.getDescription())
+                        .isActive(course.getIsActive())
+                        .image(course.getImage())
+                        .owner(courseRepository.findOwnerOfCourse(course.getId()))
+                        .createdAt(course.getCreatedAt())
+                        .slug(course.getSlug())
+                        .build())
+                .collect(Collectors.toList());
     }
 
-    public List<Course> getRandomCourses() {
-        // Create a Pageable object to limit the result to 3 courses
-        Pageable pageable = PageRequest.of(0, 3); // 0 for the first page, 3 for the number of courses to fetch
-        return courseRepository.findRandomCourses(pageable);
+    public List<CourseResponse> getRandomCourses() {
+        Pageable pageable = PageRequest.of(0, 3);
+        List<Course> courses = courseRepository.findRandomCourses(pageable);
+        return courses.stream()
+                .map(course -> CourseResponse.builder()
+                        .id(course.getId())
+                        .title(course.getTitle())
+                        .shortDescription(course.getShortDescription())
+                        .description(course.getDescription())
+                        .isActive(course.getIsActive())
+                        .image(course.getImage())
+                        .owner(courseRepository.findOwnerOfCourse(course.getId()))
+                        .createdAt(course.getCreatedAt())
+                        .slug(course.getSlug())
+                        .build())
+                .collect(Collectors.toList());
     }
-    public List<Course> getCoursesWithoutQuiz() {
-        return courseRepository.findCoursesWithoutQuiz();
+    public List<CourseResponse> getCoursesWithoutQuiz() {
+        List<Course> courses = courseRepository.findCoursesWithoutQuiz();
+        return courses.stream()
+                .map(course -> CourseResponse.builder()
+                        .id(course.getId())
+                        .title(course.getTitle())
+                        .shortDescription(course.getShortDescription())
+                        .description(course.getDescription())
+                        .isActive(course.getIsActive())
+                        .image(course.getImage())
+                        .owner(courseRepository.findOwnerOfCourse(course.getId()))
+                        .createdAt(course.getCreatedAt())
+                        .slug(course.getSlug())
+                        .build())
+                .collect(Collectors.toList());
+    }
+    public CourseResponse getCourseBySlug(String slug) {
+        Course course = courseRepository.findBySlug(slug).orElseThrow();
+        return CourseResponse.builder()
+                .id(course.getId())
+                .title(course.getTitle())
+                .shortDescription(course.getShortDescription())
+                .description(course.getDescription())
+                .isActive(course.getIsActive())
+                .image(course.getImage())
+                .owner(courseRepository.findOwnerOfCourse(course.getId()))
+                .createdAt(course.getCreatedAt())
+                .slug(course.getSlug())
+                .build();
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////

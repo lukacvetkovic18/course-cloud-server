@@ -1,6 +1,7 @@
 package com.example.demo.api.course;
 
 import com.example.demo.api.course.courseModels.BulkCourseRequest;
+import com.example.demo.api.course.courseModels.CourseResponse;
 import com.example.demo.api.course.courseModels.CreateCourseRequest;
 import com.example.demo.api.course.courseModels.UpdateCourseRequest;
 import com.example.demo.api.user.User;
@@ -29,20 +30,20 @@ public class CourseController {
     }
 
     @PostMapping
-    public Course createCourse(@RequestBody CreateCourseRequest course) {
+    public CourseResponse createCourse(@RequestBody CreateCourseRequest course) {
         return courseService.createCourse(course);
     }
 
     @GetMapping
-    public List<Course> getAllCourses() { return courseService.getAllCourses(); }
+    public List<CourseResponse> getAllCourses() { return courseService.getAllCourses(); }
 
     @GetMapping(path = "/{id}")
-    public Optional<Course> getCourseById(@PathVariable("id") long id) {
+    public CourseResponse getCourseById(@PathVariable("id") long id) {
         return courseService.getCourseById(id);
     }
 
     @PutMapping
-    public Course updateCourse(@RequestBody UpdateCourseRequest course) {
+    public CourseResponse updateCourse(@RequestBody UpdateCourseRequest course) {
         return courseService.updateCourse(course);
     }
 
@@ -57,17 +58,17 @@ public class CourseController {
     }
 
     @GetMapping(path = "/instructor/{id}")
-    public List<Course> getInstructorCourses(@PathVariable("id") long id) {
+    public List<CourseResponse> getInstructorCourses(@PathVariable("id") long id) {
         return courseService.getInstructorCourses(id);
     }
 
     @GetMapping(path = "/instructor/logged-in")
-    public List<Course> getMyCourses() {
+    public List<CourseResponse> getMyCourses() {
         return courseService.getMyCourses();
     }
 
     @GetMapping(path = "/student/logged-in")
-    public List<Course> getMyEnrolledCourses() {
+    public List<CourseResponse> getMyEnrolledCourses() {
         return courseService.getMyEnrolledCourses();
     }
 
@@ -92,19 +93,24 @@ public class CourseController {
     }
 
     @GetMapping(path = "/search")
-    public List<Course> getCourseSearchResults(@RequestParam("query") String query) {
+    public List<CourseResponse> getCourseSearchResults(@RequestParam("query") String query) {
         return courseService.getCourseSearchResults(query);
     }
 
     @GetMapping("/random")
-    public List<Course> getRandomCourses() {
+    public List<CourseResponse> getRandomCourses() {
         return courseService.getRandomCourses();
     }
 
     @GetMapping("/without-quiz")
-    public ResponseEntity<List<Course>> getCoursesWithoutQuiz() {
-        List<Course> courses = courseService.getCoursesWithoutQuiz();
+    public ResponseEntity<List<CourseResponse>> getCoursesWithoutQuiz() {
+        List<CourseResponse> courses = courseService.getCoursesWithoutQuiz();
         return ResponseEntity.ok(courses);
+    }
+
+    @GetMapping(path = "/slug/{slug}")
+    public CourseResponse getCourseBySlug(@PathVariable("slug") String slug) {
+        return courseService.getCourseBySlug(slug);
     }
 
     @PostMapping("/bulk-create")

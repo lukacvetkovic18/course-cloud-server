@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CourseRepository extends JpaRepository<Course, Long> {
@@ -39,5 +40,8 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
 
     @Query("SELECT c FROM Course c WHERE c.quiz IS NULL")
     List<Course> findCoursesWithoutQuiz();
+
+    @Query("SELECT c FROM Course c WHERE c.slug = :slug")
+    Optional<Course> findBySlug(@Param("slug") String slug);
 
 }

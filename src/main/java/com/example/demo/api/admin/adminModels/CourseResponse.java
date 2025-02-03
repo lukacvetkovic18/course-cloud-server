@@ -20,4 +20,5 @@ public class CourseResponse {
     private String image;
     private User owner;
     private Timestamp createdAt;
+    private String slug;
 }

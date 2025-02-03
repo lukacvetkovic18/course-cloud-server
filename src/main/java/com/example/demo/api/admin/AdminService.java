@@ -242,12 +242,19 @@ public class AdminService {
     public CourseResponse createCourse(CreateCourseRequest courseRequest) throws Exception {
         User user = userRepository.findById(courseRequest.getOwnerId()).orElseThrow();
 
+        String slug = courseRequest.getTitle().toLowerCase().replaceAll("\\s+", "-");
+
+        int num = 1;
+        while (courseRepository.findBySlug(slug).isPresent()) {
+            slug = courseRequest.getTitle().toLowerCase().replaceAll("\\s+", "-") + "-" + num++;
+        }
         Course course = courseRepository.save(Course.builder()
                 .title(courseRequest.getTitle())
                 .shortDescription(courseRequest.getShortDescription())
                 .description(courseRequest.getDescription())
                 .isActive(courseRequest.getIsActive())
                 .image(courseRequest.getImage().orElse(null))
+                .slug(slug)
                 .build());
 
         Enrollment enrollment = Enrollment.builder()
@@ -266,6 +273,7 @@ public class AdminService {
                 .image(course.getImage())
                 .owner(user)
                 .createdAt(course.getCreatedAt())
+                .slug(course.getSlug())
                 .build();
     }
 
@@ -305,7 +313,17 @@ public class AdminService {
         if (courseOptional.isPresent()) {
             Course existingCourse = courseOptional.get();
 
-            courseRequest.getTitle().ifPresent(existingCourse::setTitle);
+            courseRequest.getTitle().ifPresent(newTitle -> {
+                if (!newTitle.equals(existingCourse.getTitle())) {
+                    String newSlug = newTitle.toLowerCase().replaceAll("\\s+", "-");
+                    int num = 1;
+                    while (courseRepository.findBySlug(newSlug).isPresent()) {
+                        newSlug = newTitle.toLowerCase().replaceAll("\\s+", "-") + "-" + num++;
+                    }
+                    existingCourse.setSlug(newSlug);
+                }
+                existingCourse.setTitle(newTitle);
+            });
             courseRequest.getShortDescription().ifPresent(existingCourse::setShortDescription);
             courseRequest.getDescription().ifPresent(existingCourse::setDescription);
             courseRequest.getIsActive().ifPresent(existingCourse::setIsActive);
@@ -339,6 +357,7 @@ public class AdminService {
                     .image(existingCourse.getImage())
                     .owner(enrollmentRepository.findOwnerEnrollmentByCourseId(existingCourse.getId()).get().getUser())
                     .createdAt(existingCourse.getCreatedAt())
+                    .slug(existingCourse.getSlug())
                     .build();
         }
 

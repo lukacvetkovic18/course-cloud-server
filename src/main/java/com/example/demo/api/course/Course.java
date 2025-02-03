@@ -37,6 +37,9 @@ public class Course {
     @Column(length = 5000)
     private String description;
 
+    @Column(unique = true)
+    private String slug;
+
     @Column()
     private Boolean isActive;
 

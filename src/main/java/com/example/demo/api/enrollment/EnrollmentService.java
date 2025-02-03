@@ -6,27 +6,33 @@ import com.example.demo.api.enrollment.enrollmentModels.CreateEnrollmentRequest;
 import com.example.demo.api.enrollment.enrollmentModels.UpdateEnrollmentRequest;
 import com.example.demo.api.user.User;
 import com.example.demo.api.user.UserRepository;
+import com.example.demo.config.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
+import static com.example.demo.api.user.UserService.getBearerTokenHeader;
+
 @Service
 public class EnrollmentService {
     private final EnrollmentRepository enrollmentRepository;
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
+    private final JwtService jwtService;
 
     @Autowired
     public EnrollmentService(
             EnrollmentRepository enrollmentRepository,
             UserRepository userRepository,
-            CourseRepository courseRepository
+            CourseRepository courseRepository,
+            JwtService jwtService
     ) {
         this.enrollmentRepository = enrollmentRepository;
         this.userRepository = userRepository;
         this.courseRepository = courseRepository;
+        this.jwtService = jwtService;
     }
 
     public Enrollment createEnrollment(CreateEnrollmentRequest enrollmentRequest) {
@@ -71,6 +77,39 @@ public class EnrollmentService {
 
     public void deleteEnrollment(Long id) {
         enrollmentRepository.deleteById(id);
+    }
+
+    public Enrollment enrollToCourse(Long courseId) throws Exception {
+        String token = getBearerTokenHeader();
+        String email = jwtService.extractUsername(token);
+        User user = userRepository.findByEmail(email).orElseThrow();
+        Course course = courseRepository.findById(courseId).orElseThrow();
+
+        if(enrollmentRepository.findEnrollmentByUserIdAndCourseId(user.getId(), courseId).isPresent()){
+            throw new Exception("User is already enrolled to this course.");
+        }
+
+        Enrollment enrollment = Enrollment.builder()
+                .user(user)
+                .course(course)
+                .isInstructor(false)
+                .build();
+        return enrollmentRepository.save(enrollment);
+    }
+
+    public void removeEnrollmentToCourse(Long courseId) throws Exception {
+        String token = getBearerTokenHeader();
+        String email = jwtService.extractUsername(token);
+        User user = userRepository.findByEmail(email).orElseThrow();
+        Course course = courseRepository.findById(courseId).orElseThrow();
+
+        Optional<Enrollment> enrollment = enrollmentRepository.findEnrollmentByUserIdAndCourseId(user.getId(), courseId);
+
+        if(enrollment.isEmpty()){
+            throw new Exception("User is not enrolled to this course.");
+        } else {
+            enrollmentRepository.deleteById(enrollment.get().getId());
+        }
     }
 
 }

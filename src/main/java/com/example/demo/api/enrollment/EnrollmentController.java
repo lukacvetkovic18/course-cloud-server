@@ -46,4 +46,14 @@ public class EnrollmentController {
     public void deleteEnrollment(@PathVariable("id") long id) {
         enrollmentService.deleteEnrollment(id);
     }
+
+    @PostMapping(path = "/course/{courseId}")
+    public Enrollment enrollToCourse(@PathVariable("courseId") long courseId) throws Exception {
+        return enrollmentService.enrollToCourse(courseId);
+    }
+
+    @DeleteMapping(path = "/course/{courseId}")
+    public void removeEnrollmentToCourse(@PathVariable("courseId") long courseId) throws Exception {
+        enrollmentService.removeEnrollmentToCourse(courseId);
+    }
 }

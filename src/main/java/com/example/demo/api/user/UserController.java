@@ -84,4 +84,29 @@ public class UserController {
         return userService.getInstructorSearchResults(query);
     }
 
+    @GetMapping(path = "/token-valid")
+    public Boolean isTokenValid() {
+        return userService.IsTokenValid();
+    }
+
+    @GetMapping(path = "/slug/{slug}")
+    public UserResponse getUserBySlug(@PathVariable("slug") String slug) {
+        return userService.getUserBySlug(slug);
+    }
+
+    @GetMapping(path = "/is-student")
+    public Boolean isUserStudent() {
+        return userService.isUserStudent();
+    }
+
+    @GetMapping(path = "/is-instructor")
+    public Boolean isUserInstructor() {
+        return userService.isUserInstructor();
+    }
+
+    @GetMapping(path = "/is-admin")
+    public Boolean isUserAdmin() {
+        return userService.isUserAdmin();
+    }
+
 }
